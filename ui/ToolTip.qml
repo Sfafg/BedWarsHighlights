@@ -7,7 +7,7 @@ Rectangle {
     property alias timeText: time.text
 
     implicitWidth: 190
-    implicitHeight: 110
+    implicitHeight: 130
     radius: 5
     color: Theme.primary4
     border.width: 1
