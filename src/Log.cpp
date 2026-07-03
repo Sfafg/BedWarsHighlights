@@ -11,6 +11,12 @@ namespace fs = std::filesystem;
 
 int GetLogCreationDay(const char *logPath) {
     std::string date = fs::path(logPath).stem().stem();
+    if (date == "latest") {
+        auto sec = std::chrono::system_clock::now().time_since_epoch();
+        auto days = std::chrono::duration_cast<std::chrono::days>(sec).count();
+        return days - 1;
+    }
+
     size_t pos = date.rfind('-');
     if (pos != std::string::npos) date.erase(pos);
 
@@ -65,6 +71,7 @@ Log::Log(const std::string &path) {
     std::stringstream ss;
     ss << logFile.rdbuf();
 
-    contents = decompressGzip(ss.str());
+    if (path.ends_with(".log")) contents = ss.str();
+    else contents = decompressGzip(ss.str());
     day = GetLogCreationDay(path.c_str());
 }

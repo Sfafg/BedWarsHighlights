@@ -12,7 +12,7 @@ void Backend::setVideoPath(const QUrl &path) {
     m_videoPath = path;
 
     const std::string logDirectory = "/home/slawek/Crystal-Launcher/instances/u.pvp/.minecraft/logs/";
-    const std::string playerNicknames[] = {"Sfafg27", "Ersit", "Delxwel"};
+    const std::string playerNicknames[] = {"Sfafg27", "Ersit", "delxwel"};
     Video video(m_videoPath.toString().toStdString().c_str());
     auto logs = GetLogsForDay(logDirectory.c_str(), video.day);
     std::vector<Event> events = ParseEvents(logs, video.day);

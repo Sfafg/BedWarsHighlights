@@ -1,4 +1,5 @@
 #include "Events.h"
+#include <QGuiApplication>
 #include <sstream>
 #include <regex>
 
@@ -86,7 +87,6 @@ std::vector<Event> ParseEvents(const std::vector<Log> &logs, int day) {
     std::string teamColor;
     for (auto &l : logs) {
         std::vector<Event> evnt = ParseLog(l.contents, teamColor);
-        // if (l.day < day) continue;
         for (auto &e : evnt) e.timeStamp += l.day * 86400;
         results.append_range(evnt);
     }
