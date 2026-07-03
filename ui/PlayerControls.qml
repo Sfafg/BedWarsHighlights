@@ -128,7 +128,7 @@ Rectangle {
             Shortcut {
                 sequence: "K"
                 onActivated: {
-                    slider.value += 0.11;
+                    slider.value += 0.100001;
                     slider.value = Math.max(Math.floor(slider.value * 10) / 10, 0.1);
                     Context.mediaPlayer.playbackRate = slider.value;
                 }
@@ -137,7 +137,7 @@ Rectangle {
             Shortcut {
                 sequence: "J"
                 onActivated: {
-                    slider.value -= 0.11;
+                    slider.value -= 0.09999;
                     slider.value = Math.max(Math.floor(slider.value * 10) / 10, 0.1);
                     Context.mediaPlayer.playbackRate = slider.value;
                 }

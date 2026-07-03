@@ -48,13 +48,14 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor) {
             events.push_back(Event{Event::Type::GameStart, GetTimeStamp(line), "Starting as " + teamColor});
         } else if (std::regex_search(line, match, finalKillRegex)) {
             events.push_back(
-                Event{Event::Type::FinalKill, GetTimeStamp(line), match[2].str() + " killed " + match[1].str()}
+                Event{
+                    Event::Type::FinalKill, GetTimeStamp(line),
+                    match[2].str() + " killed " + match[1].str() + " finall kill"
+                }
             );
         } else if (std::regex_search(line, match, killRegex)) {
             events.push_back(
-                Event{
-                    Event::Type::Kill, GetTimeStamp(line), match[2].str() + " killed " + match[1].str() + " finall kill"
-                }
+                Event{Event::Type::Kill, GetTimeStamp(line), match[2].str() + " killed " + match[1].str()}
             );
         } else if (std::regex_search(line, match, deathRegex)) {
             events.push_back(Event{Event::Type::Death, GetTimeStamp(line), match[1].str() + " died"});
