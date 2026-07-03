@@ -1,0 +1,5 @@
+singleton Theme 1.0 Theme.qml
+singleton Fnt 1.0 Fnt.qml
+singleton Evnt 1.0 Evnt.qml
+singleton Context 1.0 Context.qml
+singleton Utils 1.0 Utils.qml
