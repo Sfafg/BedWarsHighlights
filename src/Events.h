@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <set>
 #include <iostream>
 #include "Log.h"
 
@@ -16,4 +17,4 @@ struct Event {
 
 std::ostream &operator<<(std::ostream &os, const Event::Type &e);
 
-std::vector<Event> ParseEvents(const std::vector<Log> &logs, int day);
+std::tuple<std::vector<Event>, std::set<std::string>> ParseEvents(const std::vector<Log> &logs, int day);

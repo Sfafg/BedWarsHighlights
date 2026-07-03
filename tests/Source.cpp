@@ -4,8 +4,10 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "Backend.h"
+#include "Video.h"
 
 int main(int argc, char *argv[]) {
+
     QGuiApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(true);
     QQmlApplicationEngine engine;

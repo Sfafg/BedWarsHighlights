@@ -12,11 +12,16 @@ void Backend::setVideoPath(const QUrl &path) {
     m_videoPath = path;
 
     const std::string logDirectory = "/home/slawek/Crystal-Launcher/instances/u.pvp/.minecraft/logs/";
-    const std::string playerNicknames[] = {"Sfafg27", "Ersit", "delxwel"};
     Video video(m_videoPath.toString().toStdString().c_str());
     auto logs = GetLogsForDay(logDirectory.c_str(), video.day);
-    std::vector<Event> events = ParseEvents(logs, video.day);
+    auto [events, party] = ParseEvents(logs, video.day);
 
+    if (party.empty()) {
+        party.insert("Sfafg27");
+        party.insert("Ersit");
+        party.insert("delxwel");
+        const std::string playerNicknames[] = {};
+    }
     for (int i = events.size() - 1; i >= 0; i--) {
         if (events[i].timeStamp < video.startTime || events[i].timeStamp > video.startTime + video.duration) {
             events.erase(events.begin() + i);
@@ -27,7 +32,7 @@ void Backend::setVideoPath(const QUrl &path) {
             events[i].type == Event::Type::Death || events[i].type == Event::Type::FinalDeath ||
             events[i].type == Event::Type::BedDestroyed) {
 
-            if (!std::ranges::any_of(playerNicknames, [&](const auto &s) {
+            if (!std::ranges::any_of(party, [&](const auto &s) {
                     return events[i].description.find(s) != std::string::npos;
                 })) {
                 events.erase(events.begin() + i);

@@ -26,7 +26,7 @@ int GetTimeStamp(const std::string &str) {
     return 0;
 }
 
-std::vector<Event> ParseLog(const std::string &str, std::string &teamColor) {
+std::vector<Event> ParseLog(const std::string &str, std::string &teamColor, std::set<std::string> &party) {
     // Final death????
     std::vector<Event> events;
 
@@ -34,6 +34,7 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor) {
     std::string line;
 
     std::regex teamColorRegex(R"(BedWars ► (?:You and your party|You) are now in team ([a-zA-Z]*))");
+    std::regex partyInviteRegex(R"(\[CHAT\] Party ▏ ✚ ([_a-zA-Z0-9]+) invited .* ([_a-zA-Z0-9]+) to the party.)");
     std::regex gameStartRegex(R"(\[CHAT\]                   Goodluck with your BedWars Game)");
     std::regex finalKillRegex(R"(\[CHAT\] ([_a-zA-Z0-9]+) has been killed by ([_a-zA-Z0-9]+) FINAL KILL)");
     std::regex killRegex(R"(\[CHAT\] ([_a-zA-Z0-9]+) has been killed by ([_a-zA-Z0-9]+))");
@@ -45,7 +46,11 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor) {
     while (std::getline(ss, line)) {
         std::smatch match;
         if (std::regex_search(line, match, teamColorRegex)) teamColor = match[1];
-        else if (std::regex_search(line, gameStartRegex)) {
+        else if (std::regex_search(line, match, partyInviteRegex)) {
+            party.insert(match[1]);
+            party.insert(match[2]);
+
+        } else if (std::regex_search(line, gameStartRegex)) {
             events.push_back(Event{Event::Type::GameStart, GetTimeStamp(line), "Starting as " + teamColor});
         } else if (std::regex_search(line, match, finalKillRegex)) {
             events.push_back(
@@ -82,13 +87,14 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor) {
 
     return events;
 }
-std::vector<Event> ParseEvents(const std::vector<Log> &logs, int day) {
+std::tuple<std::vector<Event>, std::set<std::string>> ParseEvents(const std::vector<Log> &logs, int day) {
     std::vector<Event> results;
+    std::set<std::string> party;
     std::string teamColor;
     for (auto &l : logs) {
-        std::vector<Event> evnt = ParseLog(l.contents, teamColor);
+        std::vector<Event> evnt = ParseLog(l.contents, teamColor, party);
         for (auto &e : evnt) e.timeStamp += l.day * 86400;
         results.append_range(evnt);
     }
-    return results;
+    return {results, party};
 }
