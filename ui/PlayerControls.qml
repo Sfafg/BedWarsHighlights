@@ -16,7 +16,7 @@ Rectangle {
         height: parent.height
         anchors.left: parent.left
         anchors.leftMargin: 10
-        spacing: -5
+        anchors.right: parent.right
 
         Button {
             icon.name: "media-skip-backward"
@@ -91,7 +91,7 @@ Rectangle {
         }
 
         Item {
-            width: 25
+            width: 5
         }
 
         Text {
@@ -109,7 +109,7 @@ Rectangle {
         }
 
         Item {
-            width: 40
+            width: 20
         }
 
         Slider {
@@ -152,12 +152,9 @@ Rectangle {
             text: slider.value + "x"
         }
 
-    }
-
-    RowLayout {
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 0
+        Item {
+            Layout.fillWidth: true
+        }
 
         Text {
             font.family: Fnt.fontFamily
@@ -205,7 +202,7 @@ Rectangle {
         }
 
         Item {
-            width: 20
+            width: 10
         }
 
         Slider {
