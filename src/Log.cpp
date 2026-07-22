@@ -27,6 +27,16 @@ int GetLogCreationDay(const char *logPath) {
     auto days = std::chrono::duration_cast<std::chrono::days>(sec).count();
     return days;
 }
+
+int GetLogOrder(const char *logPath) {
+    std::string date = fs::path(logPath).stem().stem();
+    if (date == "latest") return INT32_MAX;
+
+    size_t pos = date.rfind('-');
+    if (pos != std::string::npos) date.erase(0, pos + 1);
+
+    return std::stoi(date);
+}
 std::vector<Log> GetLogsForDay(const char *logDir, int day) {
     std::vector<Log> result;
 
@@ -34,6 +44,10 @@ std::vector<Log> GetLogsForDay(const char *logDir, int day) {
         int creationDay = GetLogCreationDay(entry.path().c_str());
         if (abs(creationDay - day) <= 1) { result.push_back(Log(entry.path().c_str())); }
     }
+
+    std::sort(result.begin(), result.end(), [](const auto &a, const auto &b) {
+        return a.day != b.day ? a.day < b.day : a.order < b.order;
+    });
 
     return result;
 }
@@ -74,4 +88,5 @@ Log::Log(const std::string &path) {
     if (path.ends_with(".log")) contents = ss.str();
     else contents = decompressGzip(ss.str());
     day = GetLogCreationDay(path.c_str());
+    order = GetLogOrder(path.c_str());
 }

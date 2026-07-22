@@ -8,6 +8,7 @@ class Log {
   public:
     std::string contents;
     int day;
+    int order;
 
     Log(const std::string &path);
 };

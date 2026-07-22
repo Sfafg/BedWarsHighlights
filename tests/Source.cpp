@@ -4,7 +4,9 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "Backend.h"
-#include "Video.h"
+
+// Timeline z minaturkami nagrania, mozna przbliżać
+// Sea of Thieves OpenCV eventy.
 
 int main(int argc, char *argv[]) {
 
@@ -16,22 +18,22 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("backend", &backend);
     engine.loadFromModule("ui", "Source");
 
-    // QFileSystemWatcher watcher;
-    // QDir dir("/home/slawek/dev/higlight_viewer/ui/");
-    // QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
-    // for (const QString &file : files) { watcher.addPath(dir.absoluteFilePath(file)); }
+    QFileSystemWatcher watcher;
+    QDir dir("/home/slawek/dev/higlight_viewer/ui/");
+    QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+    for (const QString &file : files) { watcher.addPath(dir.absoluteFilePath(file)); }
 
-    // QObject::connect(&watcher, &QFileSystemWatcher::fileChanged, [&] {
-    //     const auto roots = engine.rootObjects();
-    //     for (QObject *obj : roots) { obj->deleteLater(); }
+    QObject::connect(&watcher, &QFileSystemWatcher::fileChanged, [&] {
+        const auto roots = engine.rootObjects();
+        for (QObject *obj : roots) { obj->deleteLater(); }
 
-    //     engine.clearComponentCache();
-    //     // engine.loadFromModule("ui", "Source");
-    //     engine.load(QUrl::fromLocalFile("/home/slawek/dev/higlight_viewer/ui/Source.qml"));
+        engine.clearComponentCache();
+        // engine.loadFromModule("ui", "Source");
+        engine.load(QUrl::fromLocalFile("/home/slawek/dev/higlight_viewer/ui/Source.qml"));
 
-    //     QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
-    //     for (const QString &file : files) { watcher.addPath(dir.absoluteFilePath(file)); }
-    // });
+        QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+        for (const QString &file : files) { watcher.addPath(dir.absoluteFilePath(file)); }
+    });
 
     if (engine.rootObjects().isEmpty()) return -1;
     return app.exec();

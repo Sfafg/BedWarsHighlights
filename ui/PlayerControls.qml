@@ -25,17 +25,17 @@ Rectangle {
             Layout.preferredHeight: 54
             Layout.preferredWidth: Layout.preferredHeight
             onClicked: {
-                Context.mediaPlayer.position -= 15 * 1000;
+                Context.mediaPlayer.position = Math.max(Context.mediaPlayer.position - 15 * 1000, 0);
             }
 
             Shortcut {
                 sequence: "H"
-                onActivated: Context.mediaPlayer.position -= 5 * 1000
+                onActivated: Context.mediaPlayer.position = Math.max(Context.mediaPlayer.position - 5 * 1000, 0)
             }
 
             Shortcut {
                 sequence: "Left"
-                onActivated: Context.mediaPlayer.position -= 5 * 1000
+                onActivated: Context.mediaPlayer.position = Math.max(Context.mediaPlayer.position - 5 * 1000, 0)
             }
 
         }
@@ -75,17 +75,17 @@ Rectangle {
             Layout.preferredHeight: 54
             Layout.preferredWidth: Layout.preferredHeight
             onClicked: {
-                Context.mediaPlayer.position += 15 * 1000;
+                Context.mediaPlayer.position = Math.min(Context.mediaPlayer.position + 15 * 1000, Context.mediaPlayer.duration || backend.videoDuration);
             }
 
             Shortcut {
                 sequence: "L"
-                onActivated: Context.mediaPlayer.position += 5 * 1000
+                onActivated: Context.mediaPlayer.position = Math.min(Context.mediaPlayer.position + 5 * 1000, Context.mediaPlayer.duration || backend.videoDuration)
             }
 
             Shortcut {
                 sequence: "Right"
-                onActivated: Context.mediaPlayer.position += 5 * 1000
+                onActivated: Context.mediaPlayer.position = Math.min(Context.mediaPlayer.position + 5 * 1000, Context.mediaPlayer.duration || backend.videoDuration)
             }
 
         }
@@ -105,7 +105,7 @@ Rectangle {
             font.family: Fnt.fontFamily
             font.pixelSize: Fnt.fontSize3
             color: Theme.textSecondary
-            text: "  / " + Utils.durationText(Context.mediaPlayer.duration)
+            text: "  / " + Utils.durationText(Context.mediaPlayer.duration || backend.videoDuration)
         }
 
         Item {
@@ -158,6 +158,55 @@ Rectangle {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
+
+        Text {
+            font.family: Fnt.fontFamily
+            font.pixelSize: Fnt.fontSize3
+            color: Theme.textSecondary
+            text: Math.max(Math.floor(sliderScale.value * 10) / 10, 0.1)
+        }
+
+        Slider {
+            id: sliderScale
+
+            Material.accent: Theme.primary2
+            Layout.preferredWidth: 300
+            value: Context.videoScale
+            from: 1
+            to: 10
+            onMoved: {
+                Context.videoScale = value;
+            }
+        }
+
+        Button {
+            icon.name: "search"
+            Material.background: "transparent"
+            Material.foreground: Theme.primary1
+            topInset: 0
+            bottomInset: 0
+            leftPadding: 0
+            rightPadding: 0
+            verticalPadding: 0
+            icon.width: 28
+            icon.height: 28
+            Layout.preferredHeight: 42
+            Layout.preferredWidth: Layout.preferredHeight
+            onClicked: {
+                sliderScale.value = 1;
+                Context.mediaPlayer.videoOutput.resetTransform();
+            }
+
+            Shortcut {
+                sequence: "r"
+                onActivated: Context.mediaPlayer.videoOutput.resetTransform()
+            }
+
+        }
+
+        Item {
+            width: 20
+        }
 
         Slider {
             Material.accent: Theme.primary2

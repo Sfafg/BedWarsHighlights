@@ -57,11 +57,12 @@ Rectangle {
     MouseArea {
         id: area
 
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
+        onClicked: function(mouse) {
             if (onClick)
-                onClick();
+                onClick(mouse.button == Qt.LeftButton);
 
         }
     }

@@ -36,12 +36,14 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor, std:
     std::regex teamColorRegex(R"(BedWars ► (?:You and your party|You) are now in team ([a-zA-Z]*))");
     std::regex partyInviteRegex(R"(\[CHAT\] Party ▏ ✚ ([_a-zA-Z0-9]+) invited .* ([_a-zA-Z0-9]+) to the party.)");
     std::regex gameStartRegex(R"(\[CHAT\]                   Goodluck with your BedWars Game)");
-    std::regex finalKillRegex(R"(\[CHAT\] ([_a-zA-Z0-9]+) has been killed by ([_a-zA-Z0-9]+) FINAL KILL)");
-    std::regex killRegex(R"(\[CHAT\] ([_a-zA-Z0-9]+) has been killed by ([_a-zA-Z0-9]+))");
-    std::regex deathRegex(R"(\[CHAT\] ([_a-zA-Z0-9]+) died)");
-    std::regex bedDestroyedRegex(R"(\[CHAT\] ([a-zA-Z]+) Team's Bed .* by ([_a-zA-Z0-9]+))");
+
+    std::string killRegex(R"(\[CHAT\] ([_a-zA-Z0-9]+) .* )");
+    std::string deathRegex(R"(\[CHAT\] )");
+
+    std::regex bedDestroyedRegex(R"(\[CHAT\] ([a-zA-Z]+) Team's Bed .* ([_a-zA-Z0-9]+)$)");
+
     std::regex teamEliminationRegex(R"(\[CHAT\] ⚠ Team ([a-zA-Z]+) has been eliminated from the game!)");
-    std::regex teamWonRegex(R"( \[CHAT\]                           ([a-zA-Z]+) won the game!)");
+    std::regex teamWonRegex(R"( \[CHAT\] +([a-zA-Z]+) won the game!)");
 
     while (std::getline(ss, line)) {
         std::smatch match;
@@ -52,25 +54,12 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor, std:
 
         } else if (std::regex_search(line, gameStartRegex)) {
             events.push_back(Event{Event::Type::GameStart, GetTimeStamp(line), "Starting as " + teamColor});
-        } else if (std::regex_search(line, match, finalKillRegex)) {
-            events.push_back(
-                Event{
-                    Event::Type::FinalKill, GetTimeStamp(line),
-                    match[2].str() + " killed " + match[1].str() + " finall kill"
-                }
-            );
-        } else if (std::regex_search(line, match, killRegex)) {
-            events.push_back(
-                Event{Event::Type::Kill, GetTimeStamp(line), match[2].str() + " killed " + match[1].str()}
-            );
-        } else if (std::regex_search(line, match, deathRegex)) {
-            events.push_back(Event{Event::Type::Death, GetTimeStamp(line), match[1].str() + " died"});
         } else if (std::regex_search(line, match, bedDestroyedRegex)) {
             if (match[1].str() == teamColor)
                 events.push_back(
                     Event{Event::Type::LostBed, GetTimeStamp(line), match[2].str() + " destroyed our bed"}
                 );
-            else
+            else if (party.contains(match[2].str()))
                 events.push_back(
                     Event{Event::Type::BedDestroyed, GetTimeStamp(line), match[2].str() + " destroyed a bed"}
                 );
@@ -82,6 +71,23 @@ std::vector<Event> ParseLog(const std::string &str, std::string &teamColor, std:
                 events.push_back(Event{Event::Type::Loss, GetTimeStamp(line), "Game Lost"});
         } else if (std::regex_search(line, match, teamWonRegex)) {
             if (match[1].str() == teamColor) events.push_back(Event{Event::Type::Win, GetTimeStamp(line), "Game Won"});
+        } else {
+            for (auto &p : party) {
+                if (!line.contains(p)) continue;
+
+                if (std::regex_search(line, match, std::regex(killRegex + p + " FINAL KILL$")))
+                    events.push_back(
+                        Event{
+                            Event::Type::FinalKill, GetTimeStamp(line), p + " killed " + match[1].str() + " finall kill"
+                        }
+                    );
+                else if (std::regex_search(line, match, std::regex(killRegex + p + "$")))
+                    events.push_back(Event{Event::Type::Kill, GetTimeStamp(line), p + " killed " + match[1].str()});
+                if (std::regex_search(line, match, std::regex(deathRegex + p + " .* (?:[_a-zA-Z0-9]+) FINAL KILL$")))
+                    events.push_back(Event{Event::Type::FinalDeath, GetTimeStamp(line), p + " died"});
+                else if (std::regex_search(line, match, std::regex(deathRegex + p + " .* (?:[_a-zA-Z0-9]+)$")))
+                    events.push_back(Event{Event::Type::Death, GetTimeStamp(line), p + " died"});
+            }
         }
     }
 

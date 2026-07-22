@@ -11,7 +11,7 @@ Rectangle {
 
     Rectangle {
         height: parent.height
-        width: parent.width * Context.mediaPlayer?.position / Context.mediaPlayer?.duration
+        width: parent.width * Math.min(Context.mediaPlayer?.position / (Context.mediaPlayer?.duration || backend.videoDuration),1)
         radius: 5
         color: Theme.accent
 
@@ -62,14 +62,21 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onPositionChanged: (mouse) => {
             let p = Math.max(0, Math.min(1, mouse.x / track.width));
-            Context.mediaPlayer.position = Context.mediaPlayer.duration * p;
-            console.log(p);
+            Context.mediaPlayer.position =  (Context.mediaPlayer.duration || backend.videoDuration)* p;
         }
         onPressed: (mouse) => {
             let p = Math.max(0, Math.min(1, mouse.x / track.width));
-            Context.mediaPlayer.position = Context.mediaPlayer.duration * p;
-            console.log(mouse.x);
-            console.log(track.width);
+            Context.mediaPlayer.position = (Context.mediaPlayer.duration || backend.videoDuration) * p;
+        }
+    }
+
+    Connections{
+        target: Context.mediaPlayer
+        onPositionChanged:
+        {
+            if(Context.mediaPlayer.position > (Context.mediaPlayer.duration || backend.videoDuration))
+                Context.mediaPlayer.position = Context.mediaPlayer.duration || backend.videoDuration
+
         }
     }
 

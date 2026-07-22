@@ -69,7 +69,7 @@ Rectangle {
                 anchors.fill: parent
                 onClicked: {
                     Context.selectedEvent = index;
-                    Context.mediaPlayer.position = timeStamp;
+                    Context.mediaPlayer.position = timeStamp - 3000;
                 }
             }
 
