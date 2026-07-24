@@ -45,11 +45,10 @@ Rectangle {
             color: Theme.textSecondary
             font.family: Fnt.fontFamily
             font.pixelSize: Fnt.fontSize4
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: Qt.AlignCenter
             padding: 5
-            leftPadding: 15
-            rightPadding: 0
+            leftPadding: 0
+            rightPadding: 15
         }
 
     }

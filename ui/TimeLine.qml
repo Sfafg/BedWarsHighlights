@@ -1,3 +1,4 @@
+import QtMultimedia
 import QtQuick
 import QtQuick.Layouts
 
@@ -98,7 +99,7 @@ ColumnLayout {
         Layout.leftMargin: 20
         Layout.rightMargin: 20
         implicitHeight: 45
-        z: 1
+        z: 100
 
         Shortcut {
             sequence: "Ctrl+H"
@@ -156,6 +157,69 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.leftMargin: 20
         Layout.rightMargin: 20
+    }
+
+    RowLayout {
+        visible: !Context.fullScreen
+        spacing: 0
+
+        Repeater {
+            model: 6
+
+            delegate: Rectangle {
+                width: 270 / 4
+                height: 130 / 4
+
+                VideoOutput {
+                    id: output
+
+                    z: 0
+                    anchors.fill: parent
+                    fillMode: VideoOutput.Stretch
+
+                    MediaPlayer {
+                        id: player
+
+                        property real pos: -1
+
+                        autoPlay: true
+                        videoOutput: output
+                        source: backend.videoPath
+                        onMediaStatusChanged: {
+                            if (mediaStatus === MediaPlayer.LoadedMedia)
+                                pause();
+
+                        }
+
+                        audioOutput: AudioOutput {
+                            volume: 0
+                        }
+
+                    }
+
+                    Connections {
+                        function onPositionChanged() {
+                            let position = Context.mediaPlayer.position;
+                            position = Math.floor(position / 6000) * 6000;
+                            if (player.pos == position)
+                                return ;
+
+                            player.pos = position;
+                            let count = 10;
+                            let spread = 60000;
+                            let duration = (Context.mediaPlayer.duration || backend.videoDuration);
+                            player.position = position + spread * (index / (count + 1));
+                        }
+
+                        target: Context.mediaPlayer
+                    }
+
+                }
+
+            }
+
+        }
+
     }
 
     Item {
