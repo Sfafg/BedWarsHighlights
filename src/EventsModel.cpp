@@ -24,10 +24,7 @@ QVariant EventModel::data(const QModelIndex &index, int role) const {
 
 QHash<int, QByteArray> EventModel::roleNames() const {
     return {
-        {TypeRole, "type"},
-        {TypeNameRole, "typeName"},
-        {TimeStampRole, "timeStamp"},
-        {DescriptionRole, "description"}
+        {TypeRole, "type"}, {TypeNameRole, "typeName"}, {TimeStampRole, "timeStamp"}, {DescriptionRole, "description"}
     };
 }
 

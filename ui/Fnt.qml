@@ -9,4 +9,5 @@ QtObject {
     property int fontSize3: 14
     property int fontSize4: 12
     property int fontSize5: 10
+    property int fontSize6: 8
 }

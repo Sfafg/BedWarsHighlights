@@ -5,7 +5,6 @@
 #include <QQmlContext>
 #include "Backend.h"
 
-// Timeline z minaturkami nagrania, mozna przbliżać
 // Sea of Thieves OpenCV eventy.
 
 int main(int argc, char *argv[]) {
@@ -16,6 +15,7 @@ int main(int argc, char *argv[]) {
 
     Backend backend;
     engine.rootContext()->setContextProperty("backend", &backend);
+    engine.rootContext()->setContextProperty("cwd", QDir::currentPath());
     engine.loadFromModule("ui", "Source");
 
     QFileSystemWatcher watcher;

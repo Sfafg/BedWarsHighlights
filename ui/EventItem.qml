@@ -12,7 +12,7 @@ Rectangle {
     property bool selected: true
 
     height: 80
-    width: parent.width
+    width: parent?.width 
     color: selected ? Qt.lighter(theme, 0.199) : Theme.background
     radius: 3
     border.width: 1

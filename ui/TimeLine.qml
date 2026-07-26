@@ -5,8 +5,6 @@ import QtQuick.Layouts
 ColumnLayout {
     id: root
 
-    property var activeFilters: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-
     Layout.fillWidth: true
 
     PlayerControls {
@@ -57,24 +55,24 @@ ColumnLayout {
                 filterText: modelData.name
                 iconColor: modelData.event.color
                 iconSource: "qrc:/ui/ui/icons/" + modelData.event.iconName
-                isActive: root.activeFilters.includes(index)
+                isActive: Context.activeFilters.includes(index)
                 onClick: function(left) {
                     if (!left) {
                         if (isActive) {
-                            root.activeFilters = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-                            root.activeFilters.splice(index, 1);
+                            Context.activeFilters = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+                            Context.activeFilters.splice(index, 1);
                         } else {
-                            root.activeFilters = [index];
+                            Context.activeFilters = [index];
                         }
-                        root.activeFiltersChanged();
+                        Context.activeFiltersChanged();
                         return ;
                     }
-                    let i = root.activeFilters.indexOf(index);
+                    let i = Context.activeFilters.indexOf(index);
                     if (i === -1)
-                        root.activeFilters.push(index);
+                        Context.activeFilters.push(index);
                     else
-                        root.activeFilters.splice(i, 1);
-                    root.activeFiltersChanged();
+                        Context.activeFilters.splice(i, 1);
+                    Context.activeFiltersChanged();
                 }
 
                 Shortcut {
@@ -95,136 +93,20 @@ ColumnLayout {
 
     Item {
         visible: !Context.fullScreen
+        implicitHeight: 70
         Layout.fillWidth: true
         Layout.leftMargin: 20
         Layout.rightMargin: 20
-        implicitHeight: 45
-        z: 100
+        Layout.alignment: Qt.AlignBottom
 
-        Shortcut {
-            sequence: "Ctrl+H"
-            onActivated: {
-                for (let i = Context.selectedEvent - 1; i >= 0; --i) {
-                    const e = repeater.itemAt(i);
-                    if (e.visible && (Context.selectedEvent == -1 || e.timeStmp != repeater.itemAt(Context.selectedEvent).timeStmp)) {
-                        e.onClick();
-                        break;
-                    }
-                }
-            }
-        }
-
-        Shortcut {
-            sequence: "Ctrl+L"
-            onActivated: {
-                for (let i = Context.selectedEvent + 1; i < repeater.count; ++i) {
-                    const e = repeater.itemAt(i);
-                    if (e.visible && (Context.selectedEvent == -1 || e.timeStmp != repeater.itemAt(Context.selectedEvent).timeStmp)) {
-                        e.onClick();
-                        break;
-                    }
-                }
-            }
-        }
-
-        Repeater {
-            id: repeater
-
-            model: backend.events
-
-            delegate: EventTick {
-                property real timeStmp: timeStamp
-
-                visible: root.activeFilters.indexOf(type) !== -1
-                x: parent.width * timeStamp / (Context.mediaPlayer.duration || backend.videoDuration)
-                size: Evnt.typeToEvnt(type).size
-                color: Evnt.typeToEvnt(type).color
-                toolTip.eventText: typeName
-                toolTip.descriptionText: description
-                toolTip.timeText: Utils.durationText(timeStamp)
-                onClick: function() {
-                    Context.mediaPlayer.position = timeStmp - 3000;
-                    Context.selectedEvent = index;
-                }
-            }
-
-        }
-
-    }
-
-    SeekBar {
-        visible: !Context.fullScreen
-        Layout.fillWidth: true
-        Layout.leftMargin: 20
-        Layout.rightMargin: 20
-    }
-
-    RowLayout {
-        visible: !Context.fullScreen
-        spacing: 0
-
-        Repeater {
-            model: 6
-
-            delegate: Rectangle {
-                width: 270 / 4
-                height: 130 / 4
-
-                VideoOutput {
-                    id: output
-
-                    z: 0
-                    anchors.fill: parent
-                    fillMode: VideoOutput.Stretch
-
-                    MediaPlayer {
-                        id: player
-
-                        property real pos: -1
-
-                        autoPlay: true
-                        videoOutput: output
-                        source: backend.videoPath
-                        onMediaStatusChanged: {
-                            if (mediaStatus === MediaPlayer.LoadedMedia)
-                                pause();
-
-                        }
-
-                        audioOutput: AudioOutput {
-                            volume: 0
-                        }
-
-                    }
-
-                    Connections {
-                        function onPositionChanged() {
-                            let position = Context.mediaPlayer.position;
-                            position = Math.floor(position / 6000) * 6000;
-                            if (player.pos == position)
-                                return ;
-
-                            player.pos = position;
-                            let count = 10;
-                            let spread = 60000;
-                            let duration = (Context.mediaPlayer.duration || backend.videoDuration);
-                            player.position = position + spread * (index / (count + 1));
-                        }
-
-                        target: Context.mediaPlayer
-                    }
-
-                }
-
-            }
-
+        SeekBar {
         }
 
     }
 
     Item {
         visible: !Context.fullScreen
-        height: 50
+        height: 110
     }
 
 }

@@ -31,7 +31,11 @@ qt_add_qml_module(Highlights
         ui/Source.qml
         ui/TimeLine.qml
         ui/SeekBar.qml
+        ui/SeekPoint.qml
+        ui/TimeTicks.qml
+        ui/KeyFrames.qml
         ui/EventTick.qml
+        ui/EventTicks.qml
         ui/PlayerControls.qml
         ui/ToolTip.qml
         ui/FilterItem.qml

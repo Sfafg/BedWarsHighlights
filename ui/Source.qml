@@ -8,6 +8,8 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: window
 
+    onWidthChanged: vidOutput.updateTransform()
+    onHeightChanged: vidOutput.updateTransform()
     visible: true
     width: 1920
     height: 1080
@@ -71,10 +73,15 @@ ApplicationWindow {
                 VideoOutput {
                     id: vidOutput
 
+                    property bool first: true
                     property real scaleFactor: Math.min(parent.width / sourceRect.width, parent.height / sourceRect.height)
                     property point center
 
                     function resetTransform() {
+                        if (first) {
+                            first = false;
+                            return ;
+                        }
                         Context.videoScale = 1;
                         width = sourceRect.width * scaleFactor * Context.videoScale;
                         height = sourceRect.height * scaleFactor * Context.videoScale;
@@ -84,17 +91,28 @@ ApplicationWindow {
                         vidOutput.center.y = viewSpace.height * 0.5;
                     }
 
+                    function updateTransform() {
+                        if (!first)
+                            vidOutput.resetTransform();
+
+                    }
+
                     fillMode: Image.Stretch
                     width: sourceRect.width * scaleFactor
                     height: sourceRect.height * scaleFactor
                     x: (parent.width - width) * 0.5
                     y: (parent.height - height) * 0.5
-                    onSourceChanged: {
-                        resetTransform();
-                    }
                     Component.onCompleted: {
                         vidOutput.center.x = viewSpace.width * 0.5;
                         vidOutput.center.y = viewSpace.height * 0.5;
+                    }
+
+                    Connections {
+                        function onVideoPathChanged() {
+                            vidOutput.resetTransform();
+                        }
+
+                        target: backend
                     }
 
                     Connections {

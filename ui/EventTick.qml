@@ -2,11 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 
 Rectangle {
-    id: root
-
     property alias toolTip: toolTip_
     property real size: 8
-    property var onClick:null
+    property var onClick: null
 
     Layout.alignment: Qt.AlignTop
     implicitWidth: 2
@@ -39,7 +37,9 @@ Rectangle {
         height: parent.height
         hoverEnabled: true
         onClicked: {
-            if(onClick)onClick()
+            if (onClick)
+                onClick();
+
         }
     }
 

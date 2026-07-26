@@ -19,6 +19,7 @@ QtObject {
     property color text1: Qt.hsva(0, 0, 0.7, 1)
     property color textInverted: Qt.hsva(0, 0, 0, 1)
     property color textSecondary: Qt.hsva(0, 0, 0.4, 1)
+    property color textTernary: Qt.hsva(0, 0, 0.2, 1)
     property color textSecondaryInverted: Qt.hsva(0, 0, 0.2, 1)
     property color textOutline: Qt.hsva(0, 0, 0, 0)
     property color text1Outline: Qt.hsva(0, 0, 0.2, 1)

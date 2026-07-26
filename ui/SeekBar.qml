@@ -1,121 +1,141 @@
 import Qt5Compat.GraphicalEffects
 import QtQuick
-import QtMultimedia
 
 Rectangle {
     id: track
 
+    property real timeScale: 1
+    property real timeOffset: 0
+
     implicitHeight: 3
-    implicitWidth: 500
+    implicitWidth: parent.width * timeScale
+    x: -timeOffset * parent.width
     radius: 5
     color: Theme.primary4
+    anchors.bottom: parent.bottom
 
-    Rectangle {
-        height: parent.height
-        width: parent.width * Math.min(Context.mediaPlayer?.position / (Context.mediaPlayer?.duration || backend.videoDuration),1)
-        radius: 5
-        color: Theme.accent
-
-        Rectangle {
-            implicitHeight: 80
-            implicitWidth: 2
-            radius: 2
-            color: Theme.accent
-            anchors.horizontalCenter: point.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
+    Connections {
+        function onVideoPathChanged() {
+            timeScale = 1;
+            timeOffset = 0;
         }
 
-        Glow {
-            anchors.fill: point
-            source: point
-            radius: 16
-            samples: 32
-            color: Theme.accent
-            spread: 0.2
-        }
+        target: backend
+    }
 
-        Rectangle {
-            anchors.horizontalCenter: point.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            height: parent.height + 10
-            width: parent.height + 10
-            radius: parent.height
-            color: Theme.primary4
-        }
+    EventTicks {
+        width: parent.width
+        anchors.bottom: timeTicks.top
+        anchors.bottomMargin: 15
+    }
 
-        Rectangle {
-            id: point
+    TimeTicks {
+        id: timeTicks
 
-            x: parent.width - width / 2
-            anchors.verticalCenter: parent.verticalCenter
-            height: parent.height + 6
-            width: parent.height + 6
-            radius: parent.height
-            color: Theme.accent
+        timeStart: (track.timeOffset / track.timeScale) * Utils.duration()
+        timeEnd: timeStart + Utils.duration() / track.timeScale
+        width: parent.width
+        anchors.bottom: parent.top
+    }
 
-    Rectangle {
-        width: 270 / 2
-        height: 130 / 2
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.bottom
-        anchors.topMargin: 20
-        z:-100
+    KeyFrames {
+        id: keyFrames
 
-        VideoOutput {
-            id: output
+        timeStart: (track.timeOffset / track.timeScale) * Utils.duration()
+        timeEnd: timeStart + Utils.duration() / track.timeScale
+        width: parent.width
+        anchors.top: parent.top
+    }
 
-            anchors.fill: parent
-            fillMode: VideoOutput.Stretch
+    SeekPoint {
+        z: 20
+    }
 
-            MediaPlayer {
-                id: player
+    MouseArea {
+        property bool rightButton
+        property point mousePos
+        property real velocity
+        property real mouseDragStart
 
-                property real pos: -1
-
-                autoPlay: true
-                videoOutput: output
-                source: backend.videoPath
-                onMediaStatusChanged: {
-                    if (mediaStatus === MediaPlayer.LoadedMedia)
-                        pause();
-
-                }
-
-                audioOutput: AudioOutput {
-                    volume: 0
-                }
+        width: parent.width
+        anchors.bottom: keyFrames.bottom
+        anchors.top: timeTicks.top
+        cursorShape: Qt.PointingHandCursor
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: (mouse) => {
+            rightButton = mouse.button == Qt.RightButton;
+            if (rightButton) {
+                let mouseDelta = mouse.x + track.x - mouseDragStart;
+                if (Math.abs(mouseDelta) < 2)
+                    velocity = 0;
 
             }
-
         }
-
-    }
-        }
-
-    }
-    MouseArea {
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height + 30
-        cursorShape: Qt.PointingHandCursor
         onPositionChanged: (mouse) => {
-            let p = Math.max(0, Math.min(1, mouse.x / track.width));
-            Context.mediaPlayer.position =  (Context.mediaPlayer.duration || backend.videoDuration)* p;
+            if (rightButton) {
+                let mouseDelta = mouse.x - mousePos.x;
+                velocity -= mouseDelta * 0.04;
+                animation.running = true;
+            } else {
+                let p = Math.max(0, Math.min(1, mouse.x / track.width));
+                Context.mediaPlayer.position = (Context.mediaPlayer.duration || backend.videoDuration) * p;
+            }
+            mousePos.x = mouse.x;
+            mousePos.y = mouse.y;
         }
         onPressed: (mouse) => {
-            let p = Math.max(0, Math.min(1, mouse.x / track.width));
-            Context.mediaPlayer.position = (Context.mediaPlayer.duration || backend.videoDuration) * p;
+            rightButton = mouse.button == Qt.RightButton;
+            mouseDragStart = mouse.x + track.x;
+            if (rightButton) {
+            } else {
+                let p = Math.max(0, Math.min(1, mouse.x / track.width));
+                Context.mediaPlayer.position = (Context.mediaPlayer.duration || backend.videoDuration) * p;
+            }
+            mousePos.x = mouse.x;
+            mousePos.y = mouse.y;
         }
+        onWheel: (wheel) => {
+            let s = track.timeScale;
+            let c = wheel.x / track.width;
+            let ct = (c + track.timeOffset) / s;
+            track.timeScale = Math.min(Math.max(track.timeScale + track.timeScale * wheel.angleDelta.y * 0.001, 1), Utils.duration() / (30 * 1000));
+            track.timeOffset = ct * track.timeScale - c;
+            track.timeOffset = Math.max(Math.min(track.timeOffset, track.timeScale - 1), 0);
+            wheel.accepted = true;
+        }
+
+        Timer {
+            id: animation
+
+            interval: 8
+            repeat: true
+            onTriggered: {
+                parent.velocity *= 0.99;
+                let newOffset = track.timeOffset + parent.velocity / track.parent.width;
+                if (newOffset < 0 || newOffset > track.timeScale - 1) {
+                    parent.velocity = 0;
+                    running = false;
+                    track.timeOffset = Math.max(Math.min(newOffset, track.timeScale - 1), 0);
+                } else {
+                    track.timeOffset = newOffset;
+                }
+                if (Math.abs(parent.velocity) < 0.01) {
+                    parent.velocity = 0;
+                    running = false;
+                }
+            }
+        }
+
     }
 
-    Connections{
-        target: Context.mediaPlayer
-        function onPositionChanged()
-        {
-            if(Context.mediaPlayer.position > (Context.mediaPlayer.duration || backend.videoDuration))
-                Context.mediaPlayer.position = Context.mediaPlayer.duration || backend.videoDuration
+    Connections {
+        function onPositionChanged() {
+            if (Context.mediaPlayer.position > (Context.mediaPlayer.duration || backend.videoDuration))
+                Context.mediaPlayer.position = Context.mediaPlayer.duration || backend.videoDuration;
 
         }
+
+        target: Context.mediaPlayer
     }
 
 }
